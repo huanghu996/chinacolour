@@ -1,0 +1,93 @@
+<html>
+<head>
+    <meta charset="utf8">
+    <script src="jquery-3.5.1.js"></script>
+</head>
+<body>
+
+<div>
+    <p class="scolor">
+        <input type="text" class="img-x" id="img_x" value="" placeholder="X">
+        <input type="text" class="img-y" id="img_y" value="" placeholder="Y">
+        <button id="straw_btn">点击吸取颜色</button>
+        <label class="square" style="width: 20px; height: 20px; display: inline-block; vertical-align: middle;"></label>
+        <span id="rgb_val"></span>
+    </p>
+</div>
+
+<div class="circular" onclick="getClickPos(event);">
+	<img src="https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=314061274,1929803010&fm=26&gp=0.jpg" alt="" id="cur_xb" style="cursor: crosshair;">
+</div>
+<canvas id="canvas" style="display: none;"></canvas>
+<script type="text/javascript">
+$(function(){
+    var src_img = new Image();
+    src_img.src = $('#cur_xb').attr('src');
+    var canvas = document.getElementById('canvas');
+    canvas.setAttribute('width', src_img.width);
+    canvas.setAttribute('height', src_img.height);
+    var ctx = canvas.getContext('2d');
+    //当图片加载完毕的时候在drawImage,否则可能图片还没有加载完毕
+    //当然画不上去喽，这就和浏览器的性能有关了。
+    src_img.onload = function() {
+        ctx.drawImage(src_img, 0, 0);
+        src_img.style.display = 'none';
+    };
+
+    $('#straw_btn').click(function(){
+    	var img_x = $('#img_x').val();
+    	var img_y = $('#img_y').val();
+
+    	if ('' == img_x || '' == img_y) {
+            alert("请选择图片坐标");
+            return false;
+    	}
+
+        var pixel = ctx.getImageData(img_x, img_y, 1, 1);
+        var data = pixel.data;
+        var rgba = 'rgba(' + data[0] + ',' + data[1] + ',' + data[2] + ',' + (data[3] / 255) + ')';
+        $('.square').css('background', rgba);
+        $('#rgb_val').text(rgba);
+    });
+});
+
+//获取坐标
+function getClickPos(e){
+    var xPage = (navigator.appName == 'Netscape')? e.pageX : event.x+document.body.scrollLeft;
+    var yPage = (navigator.appName == 'Netscape')? e.pageY : event.y+document.body.scrollTop;
+    identifyImage = document.getElementById("cur_xb");
+    img_x = locationLeft(identifyImage);
+    img_y = locationTop(identifyImage);
+    var xPos = xPage-img_x;
+    var yPos = yPage-img_y;
+    // alert('X : ' + xPos + '\n' + 'Y : ' + yPos);
+    
+    $('#img_x').val(xPos);
+    $('#img_y').val(yPos);
+}
+//find the screen location of an element
+function locationLeft(element){
+    offsetTotal = element.offsetLeft;
+    scrollTotal = 0; //element.scrollLeft but we dont want to deal with scrolling - already in page coords
+
+    if (element.tagName != "BODY"){
+       if (element.offsetParent != null)
+          return offsetTotal+scrollTotal+locationLeft(element.offsetParent);
+    }
+    return offsetTotal+scrollTotal;
+}
+//find the screen location of an element
+function locationTop(element){
+    offsetTotal = element.offsetTop;
+    scrollTotal = 0; //element.scrollTop but we dont want to deal with scrolling - already in page coords
+
+    if (element.tagName != "BODY"){
+       if (element.offsetParent != null)
+          return offsetTotal+scrollTotal+locationTop(element.offsetParent);
+    }
+    return offsetTotal+scrollTotal;
+}
+
+</script>
+</body>
+</html>
